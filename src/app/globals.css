@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --brand-blue: #2563EB;
+    --brand-black: #111111;
+  }
+}
+
+/* CV Print/Export Styles */
+@layer components {
+  .cv-page {
+    width: 794px;
+    min-height: 1123px;
+    background: white;
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+    color: var(--brand-black);
+    position: relative;
+  }
+
+  .cv-section-title {
+    font-size: 1.55rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: var(--brand-black);
+  }
+
+  .cv-section-rule {
+    height: 3px;
+    background: var(--brand-blue);
+    flex: 1;
+    margin-left: 12px;
+    margin-top: 4px;
+  }
+
+  .cv-timeline-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 3px solid var(--brand-blue);
+    background: white;
+    flex-shrink: 0;
+    z-index: 2;
+  }
+
+  .cv-timeline-dot-filled {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--brand-blue);
+    flex-shrink: 0;
+    z-index: 2;
+  }
+
+  .cv-timeline-line {
+    width: 3px;
+    background: var(--brand-blue);
+    position: absolute;
+    left: 5px;
+    top: 12px;
+    bottom: 0;
+  }
+}
+
+/* Scrollbar styling */
+.chat-messages::-webkit-scrollbar {
+  width: 6px;
+}
+.chat-messages::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+.chat-messages::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+.chat-messages::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+/* CV Scale container */
+.cv-scale-container {
+  transform-origin: top center;
+}
+
+/* Hide scrollbar for cv preview area but allow scrolling */
+.cv-preview-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.cv-preview-scroll::-webkit-scrollbar-track {
+  background: #f0f0f0;
+}
+.cv-preview-scroll::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
