@@ -252,7 +252,7 @@ export default function CVPreview({ data }: CVPreviewProps) {
 
         {/* Right side: professional title + 21 DATAS logo */}
         <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 12, maxWidth: 160 }}>
-          {data.titles?.map((title, i) => (
+          {data.titles?.slice(0, 2).map((title, i) => (
             <div key={i} style={{ fontSize: 14, color: "#444", lineHeight: 1.35 }}>
               {title}
             </div>
@@ -467,37 +467,59 @@ export default function CVPreview({ data }: CVPreviewProps) {
               </div>
             </div>
           )}
-        </div>
-      </div>
 
-      {/* ───────── EDUCATION (full width) ───────── */}
-      <div style={{ marginTop: 14 }}>
-        <SectionTitle>{labels.education}</SectionTitle>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 32px" }}>
-          {data.education.map((edu, i) => (
-            <div key={i} style={{ flex: "1 1 45%", minWidth: "40%" }}>
-              <div style={{ fontSize: 13, fontWeight: 700, textAlign: "center", marginBottom: 2 }}>
-                {edu.degree}
-              </div>
-              <div style={{ display: "flex", gap: 6 }}>
-                <div style={{ fontSize: 11, color: "#888", fontStyle: "italic", whiteSpace: "nowrap" }}>
-                  {edu.dateRange}
+          {/* EDUCATION — in right column, timeline style */}
+          <div style={{ marginTop: 14 }}>
+            <SectionTitle>{labels.education}</SectionTitle>
+            <div style={{ position: "relative" }}>
+              {/* Continuous timeline line */}
+              <div
+                style={{
+                  position: "absolute",
+                  left: 4.5,
+                  top: 8,
+                  bottom: 8,
+                  width: 3,
+                  background: "#022bfe",
+                  zIndex: 0,
+                }}
+              />
+              {data.education.map((edu, i) => (
+                <div key={i} style={{ display: "flex", gap: 8, marginBottom: 6, position: "relative" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      paddingTop: 2,
+                      minWidth: 12,
+                      zIndex: 1,
+                    }}
+                  >
+                    <TimelineDot filled={i === 0} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+                      <span style={{ fontSize: 11, color: "#888", fontStyle: "italic", whiteSpace: "nowrap" }}>
+                        {edu.dateRange}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 13, fontWeight: 700 }}>{edu.degree}</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "#022bfe" }}>{edu.institution}</div>
+                    {edu.details && (
+                      <ul style={{ margin: "1px 0 0 12px", padding: 0, listStyleType: "disc" }}>
+                        {edu.details.map((d, j) => (
+                          <li key={j} style={{ fontSize: 11, lineHeight: 1.3 }}>
+                            {d}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <div style={{ fontSize: 12, fontWeight: 700 }}>{edu.institution}</div>
-                  {edu.details && (
-                    <ul style={{ margin: "1px 0 0 10px", padding: 0, listStyleType: "disc" }}>
-                      {edu.details.map((d, j) => (
-                        <li key={j} style={{ fontSize: 11, lineHeight: 1.3 }}>
-                          {d}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       </div>
     </div>
