@@ -18,7 +18,7 @@ export default function ChatPanel({ onCvDataUpdate, cvData }: ChatPanelProps) {
     {
       role: "assistant",
       content:
-        "👋 Welcome to the 21Datas CV Maker!\n\nPaste the content of a CV below and I'll format it into the 21Datas brand template.\n\nYou can also ask me to modify specific sections after the CV is generated.",
+        "Paste a CV below and I'll format it into the 21Datas template.\n\nYou can also ask me to modify sections afterwards.",
     },
   ]);
   const [input, setInput] = useState("");
@@ -58,7 +58,7 @@ export default function ChatPanel({ onCvDataUpdate, cvData }: ChatPanelProps) {
           {
             role: "assistant",
             content:
-              "✅ CV has been generated! You can see the preview on the left.\n\nFeel free to ask me to modify any section — for example:\n• \"Change the job title to Senior Developer\"\n• \"Add a new reference\"\n• \"Translate to English\"\n• \"Add a project\"",
+              "CV generated — preview is on the left.\n\nYou can ask me to modify any section, e.g.:\n• Change the job title\n• Add a reference\n• Translate to English",
           },
         ]);
       } else {
@@ -66,7 +66,7 @@ export default function ChatPanel({ onCvDataUpdate, cvData }: ChatPanelProps) {
           ...prev,
           {
             role: "assistant",
-            content: `❌ Error: ${data.error}\n\nPlease try again with the full CV content.`,
+            content: `Error: ${data.error}`,
           },
         ]);
       }
@@ -76,7 +76,7 @@ export default function ChatPanel({ onCvDataUpdate, cvData }: ChatPanelProps) {
         {
           role: "assistant",
           content:
-            "❌ Network error. Please check your connection and try again.",
+            "Connection error. Please try again.",
         },
       ]);
     } finally {
@@ -94,17 +94,12 @@ export default function ChatPanel({ onCvDataUpdate, cvData }: ChatPanelProps) {
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-200 bg-[#2563EB] text-white">
-        <h2 className="text-base font-bold flex items-center gap-2">
-          <span className="text-xl">💬</span> 21Datas CV Chat
-        </h2>
-        <p className="text-xs text-blue-100 mt-0.5">
-          Paste CV content to generate • Ask to modify
-        </p>
+      <div className="px-5 py-3 border-b border-gray-100">
+        <h2 className="text-sm font-medium text-gray-900">Chat</h2>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 chat-messages bg-gray-50">
+      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3 chat-messages">
         {messages.map((msg, i) => (
           <div
             key={i}
@@ -113,10 +108,10 @@ export default function ChatPanel({ onCvDataUpdate, cvData }: ChatPanelProps) {
             }`}
           >
             <div
-              className={`max-w-[85%] px-3 py-2 rounded-xl text-[13px] leading-relaxed whitespace-pre-wrap ${
+              className={`max-w-[85%] px-3 py-2 rounded-lg text-[13px] leading-relaxed whitespace-pre-wrap ${
                 msg.role === "user"
-                  ? "bg-[#2563EB] text-white rounded-br-sm"
-                  : "bg-white text-gray-800 border border-gray-200 rounded-bl-sm shadow-sm"
+                  ? "bg-[#022bfe] text-white"
+                  : "bg-[#f7f7f8] text-gray-700"
               }`}
             >
               {msg.content}
@@ -125,16 +120,11 @@ export default function ChatPanel({ onCvDataUpdate, cvData }: ChatPanelProps) {
         ))}
         {loading && (
           <div className="flex justify-start">
-            <div className="bg-white text-gray-800 border border-gray-200 rounded-xl rounded-bl-sm px-4 py-3 shadow-sm">
-              <div className="flex items-center gap-2">
-                <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-[#2563EB] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                  <div className="w-2 h-2 bg-[#2563EB] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                  <div className="w-2 h-2 bg-[#2563EB] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-                </div>
-                <span className="text-xs text-gray-500">
-                  Analyzing CV content...
-                </span>
+            <div className="bg-[#f7f7f8] rounded-lg px-4 py-3">
+              <div className="flex gap-1">
+                <div className="w-1.5 h-1.5 bg-[#022bfe] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                <div className="w-1.5 h-1.5 bg-[#022bfe] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                <div className="w-1.5 h-1.5 bg-[#022bfe] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
               </div>
             </div>
           </div>
@@ -145,7 +135,7 @@ export default function ChatPanel({ onCvDataUpdate, cvData }: ChatPanelProps) {
       {/* Input */}
       <form
         onSubmit={handleSubmit}
-        className="p-3 border-t border-gray-200 bg-white"
+        className="p-4 border-t border-gray-100"
       >
         <div className="flex gap-2">
           <textarea
@@ -153,22 +143,22 @@ export default function ChatPanel({ onCvDataUpdate, cvData }: ChatPanelProps) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Paste CV content or type a modification..."
-            className="flex-1 resize-none border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent min-h-[44px] max-h-[200px]"
+            placeholder="Paste CV content or ask a modification..."
+            className="flex-1 resize-none border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#022bfe] focus:border-[#022bfe] min-h-[40px] max-h-[200px] placeholder:text-gray-300"
             rows={2}
             disabled={loading}
           />
           <button
             type="submit"
             disabled={loading || !input.trim()}
-            className="px-4 py-2 bg-[#2563EB] text-white rounded-lg font-medium text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors self-end"
+            className="px-3 py-2 bg-[#022bfe] text-white rounded-lg text-sm hover:opacity-90 disabled:opacity-30 transition-opacity self-end"
           >
-            {loading ? "..." : "Send"}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13" />
+              <polygon points="22 2 15 22 11 13 2 9 22 2" />
+            </svg>
           </button>
         </div>
-        <p className="text-[10px] text-gray-400 mt-1 text-center">
-          Press Enter to send • Shift+Enter for new line
-        </p>
       </form>
     </div>
   );

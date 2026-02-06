@@ -6,15 +6,31 @@ import ChatPanel from "@/components/ChatPanel";
 import { CVData } from "@/types/cv";
 import html2canvas from "html2canvas-pro";
 import { jsPDF } from "jspdf";
+import logo21datas from "@/image/21DATAS LOGO-05.png";
 
 export default function Home() {
   const [cvData, setCvData] = useState<CVData | null>(null);
   const [exporting, setExporting] = useState(false);
   const cvRef = useRef<HTMLDivElement>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   const handleCvDataUpdate = useCallback((data: CVData) => {
     setCvData(data);
   }, []);
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !cvData) return;
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      setCvData({ ...cvData, photoUrl: dataUrl });
+    };
+    reader.readAsDataURL(file);
+    // Reset so the same file can be re-selected
+    e.target.value = "";
+  };
 
   const handleExportPDF = async () => {
     const cvElement = document.getElementById("cv-content");
@@ -60,80 +76,62 @@ export default function Home() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-100">
+    <div className="h-screen flex flex-col bg-white">
       {/* Top bar */}
-      <header className="bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="flex items-end">
-            <span className="text-2xl font-black text-[#2563EB] leading-none">
-              2
-            </span>
-            <span className="text-2xl font-black text-[#2563EB] leading-none relative -top-[5px]">
-              1
-            </span>
-          </div>
-          <div>
-            <span className="text-sm font-bold tracking-wider text-[#2563EB]">
-              21 DATAS
-            </span>
-            <span className="text-xs text-gray-500 ml-2">CV Maker</span>
-          </div>
+      <header className="px-6 py-3 flex items-center justify-between flex-shrink-0 border-b border-gray-100">
+        <div className="flex items-center gap-2">
+          <img src={logo21datas.src} alt="21 DATAS" className="h-7" />
+          <span className="text-xs text-gray-300 font-light">|</span>
+          <span className="text-xs text-gray-400 font-light tracking-wide">
+            CV Maker
+          </span>
         </div>
         {cvData && (
-          <button
-            onClick={handleExportPDF}
-            disabled={exporting}
-            className="px-4 py-1.5 bg-[#2563EB] text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center gap-2"
-          >
-            {exporting ? (
-              <>
-                <svg
-                  className="animate-spin h-4 w-4"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                  />
-                </svg>
-                Exporting...
-              </>
-            ) : (
-              <>📄 Export PDF</>
-            )}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => photoInputRef.current?.click()}
+              className="px-4 py-1.5 border border-[#022bfe] text-[#022bfe] rounded text-xs font-medium hover:bg-[#022bfe]/5 transition-colors"
+            >
+              {cvData.photoUrl ? "Change Photo" : "Upload Photo"}
+            </button>
+            <input
+              ref={photoInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoUpload}
+              className="hidden"
+            />
+            <button
+              onClick={handleExportPDF}
+              disabled={exporting}
+              className="px-4 py-1.5 bg-[#022bfe] text-white rounded text-xs font-medium hover:opacity-90 disabled:opacity-40 transition-opacity"
+            >
+              {exporting ? "Exporting..." : "Export PDF"}
+            </button>
+          </div>
         )}
       </header>
 
       {/* Main split layout */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left: CV Preview */}
-        <div className="flex-1 overflow-auto cv-preview-scroll bg-gray-200 p-6 flex justify-center">
+        <div className="flex-1 overflow-auto cv-preview-scroll bg-[#f7f7f8] flex justify-center py-8 px-4">
           <div ref={cvRef}>
             {cvData ? (
-              <div className="shadow-2xl">
+              <div className="shadow-sm">
                 <CVPreview data={cvData} />
               </div>
             ) : (
               <div className="flex items-center justify-center h-full">
-                <div className="text-center text-gray-400">
-                  <div className="text-6xl mb-4">📄</div>
-                  <h3 className="text-xl font-semibold mb-2">
-                    No CV Generated Yet
-                  </h3>
-                  <p className="text-sm max-w-[300px]">
-                    Paste CV content in the chat panel to generate a CV preview
-                    in 21Datas brand style.
+                <div className="text-center">
+                  <div className="w-10 h-10 mx-auto mb-4 rounded-full border-2 border-[#022bfe] flex items-center justify-center">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#022bfe" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                    </svg>
+                  </div>
+                  <p className="text-sm text-gray-400 font-light">
+                    Paste CV content in the chat to begin
                   </p>
                 </div>
               </div>
@@ -142,7 +140,7 @@ export default function Home() {
         </div>
 
         {/* Right: Chat Panel */}
-        <div className="w-[420px] border-l border-gray-300 flex-shrink-0">
+        <div className="w-[400px] border-l border-gray-100 flex-shrink-0">
           <ChatPanel onCvDataUpdate={handleCvDataUpdate} cvData={cvData} />
         </div>
       </div>
