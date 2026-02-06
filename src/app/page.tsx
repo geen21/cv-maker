@@ -11,6 +11,7 @@ import logo21datas from "@/image/21DATAS LOGO-05.png";
 export default function Home() {
   const [cvData, setCvData] = useState<CVData | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [translating, setTranslating] = useState(false);
   const cvRef = useRef<HTMLDivElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
 
@@ -30,6 +31,37 @@ export default function Home() {
     reader.readAsDataURL(file);
     // Reset so the same file can be re-selected
     e.target.value = "";
+  };
+
+  const handleTranslate = async (targetLang: "fr" | "en") => {
+    if (!cvData || translating) return;
+    setTranslating(true);
+    const savedPhoto = cvData.photoUrl;
+
+    try {
+      const instruction =
+        targetLang === "fr"
+          ? "Translate ALL text content of this CV to French. Translate job titles, role descriptions, bullets, competence categories, subcategories, items, project descriptions, education degrees, details — everything. Keep names, emails, phone numbers, dates, and company names unchanged. Return the complete updated JSON."
+          : "Translate ALL text content of this CV to English. Translate job titles, role descriptions, bullets, competence categories, subcategories, items, project descriptions, education degrees, details — everything. Keep names, emails, phone numbers, dates, and company names unchanged. Return the complete updated JSON.";
+
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: instruction,
+          currentCvData: cvData,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setCvData({ ...data.cvData, photoUrl: savedPhoto });
+      }
+    } catch (error) {
+      console.error("Translation error:", error);
+    } finally {
+      setTranslating(false);
+    }
   };
 
   const handleExportPDF = async () => {
@@ -88,6 +120,26 @@ export default function Home() {
         </div>
         {cvData && (
           <div className="flex items-center gap-2">
+            <div className="flex items-center border border-gray-200 rounded overflow-hidden">
+              <button
+                onClick={() => handleTranslate("fr")}
+                disabled={translating}
+                className="px-3 py-1.5 text-xs font-medium hover:bg-[#022bfe]/5 transition-colors disabled:opacity-40"
+              >
+                FR
+              </button>
+              <div className="w-px h-4 bg-gray-200" />
+              <button
+                onClick={() => handleTranslate("en")}
+                disabled={translating}
+                className="px-3 py-1.5 text-xs font-medium hover:bg-[#022bfe]/5 transition-colors disabled:opacity-40"
+              >
+                EN
+              </button>
+            </div>
+            {translating && (
+              <span className="text-[10px] text-gray-400">Translating...</span>
+            )}
             <button
               onClick={() => photoInputRef.current?.click()}
               className="px-4 py-1.5 border border-[#022bfe] text-[#022bfe] rounded text-xs font-medium hover:bg-[#022bfe]/5 transition-colors"

@@ -18,7 +18,7 @@ export interface CVData {
   competences: CompetenceCategory[];
 
   references: Reference[];
-  projects: Project[];
+  projects?: Project[];
   education: Education[];
 }
 

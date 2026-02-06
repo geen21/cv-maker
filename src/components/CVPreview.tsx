@@ -14,7 +14,7 @@ const SectionTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
     <h2
       style={{
-        fontSize: "1.35rem",
+        fontSize: "1.4rem",
         fontWeight: 900,
         textTransform: "uppercase",
         letterSpacing: "0.02em",
@@ -41,7 +41,6 @@ const IconBox: React.FC<{ children: React.ReactNode }> = ({ children }) => (
       borderRadius: 3,
       background: "#022bfe",
       color: "#fff",
-      fontSize: 10,
       flexShrink: 0,
     }}
   >
@@ -49,10 +48,53 @@ const IconBox: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   </span>
 );
 
-const InfoRow: React.FC<{ icon: string; text: string }> = ({ icon, text }) => (
+/* SVG icons matching the reference CV */
+const icons = {
+  email: (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <path d="M22 4L12 13L2 4" />
+    </svg>
+  ),
+  linkedin: (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="#fff">
+      <path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S.02 4.88.02 3.5 1.13 1 2.5 1 4.98 2.12 4.98 3.5zM5 8H0v16h5V8zm7.98 0h-4.97v16h4.97v-8.4c0-4.67 6.03-5.05 6.03 0V24H24V13.87c0-7.88-8.92-7.59-11.02-3.71V8z" transform="scale(0.9) translate(1.3,1.3)" />
+    </svg>
+  ),
+  driving: (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="M3 10h18" />
+    </svg>
+  ),
+  location: (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9.5L12 2l9 7.5V20a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+    </svg>
+  ),
+  birthday: (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <path d="M16 2v4M8 2v4M3 10h18" />
+    </svg>
+  ),
+  phone: (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+    </svg>
+  ),
+  cert: (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="8" r="6" />
+      <path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12" />
+    </svg>
+  ),
+};
+
+const InfoRowSvg: React.FC<{ icon: React.ReactNode; text: string }> = ({ icon, text }) => (
   <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
     <IconBox>{icon}</IconBox>
-    <span style={{ fontSize: 10, color: "#222" }}>{text}</span>
+    <span style={{ fontSize: 11, color: "#222" }}>{text}</span>
   </div>
 );
 
@@ -103,15 +145,16 @@ export default function CVPreview({ data }: CVPreviewProps) {
       id="cv-content"
       style={{
         width: 794,
-        minHeight: 1123,
+        height: 1123,
         background: "#fff",
         fontFamily: "'Inter', 'Segoe UI', Arial, sans-serif",
         color: "#111",
         padding: "28px 36px 32px 36px",
         boxSizing: "border-box",
         position: "relative",
-        fontSize: 11,
+        fontSize: 12,
         lineHeight: 1.45,
+        overflow: "hidden",
       }}
     >
       {/* ───────── HEADER ───────── */}
@@ -190,18 +233,18 @@ export default function CVPreview({ data }: CVPreviewProps) {
           {/* Contact info in 2 columns */}
           <div style={{ display: "flex", gap: 32, marginTop: 12 }}>
             <div>
-              {data.email && <InfoRow icon="✉" text={data.email} />}
-              {data.linkedin && <InfoRow icon="in" text={data.linkedin} />}
+              {data.email && <InfoRowSvg icon={icons.email} text={data.email} />}
+              {data.linkedin && <InfoRowSvg icon={icons.linkedin} text={data.linkedin} />}
               {data.drivingLicense && (
-                <InfoRow icon="🚗" text={isFrench ? "Permis de conduire" : "Driving licence"} />
+                <InfoRowSvg icon={icons.driving} text={isFrench ? "Permis de conduire" : "Driving licence"} />
               )}
-              {data.location && <InfoRow icon="🏠" text={data.location} />}
+              {data.location && <InfoRowSvg icon={icons.location} text={data.location} />}
             </div>
             <div>
-              {data.birthDate && <InfoRow icon="📅" text={data.birthDate} />}
-              {data.phone && <InfoRow icon="📞" text={data.phone} />}
+              {data.birthDate && <InfoRowSvg icon={icons.birthday} text={data.birthDate} />}
+              {data.phone && <InfoRowSvg icon={icons.phone} text={data.phone} />}
               {data.certifications?.map((cert, i) => (
-                <InfoRow key={i} icon="🎓" text={cert} />
+                <InfoRowSvg key={i} icon={icons.cert} text={cert} />
               ))}
             </div>
           </div>
@@ -210,7 +253,7 @@ export default function CVPreview({ data }: CVPreviewProps) {
         {/* Right side: professional title + 21 DATAS logo */}
         <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 12, maxWidth: 160 }}>
           {data.titles?.map((title, i) => (
-            <div key={i} style={{ fontSize: 12, color: "#444", lineHeight: 1.35 }}>
+            <div key={i} style={{ fontSize: 13, color: "#444", lineHeight: 1.35 }}>
               {title}
             </div>
           ))}
@@ -227,51 +270,62 @@ export default function CVPreview({ data }: CVPreviewProps) {
       </div>
 
       {/* ───────── TWO COLUMN LAYOUT ───────── */}
-      <div style={{ display: "flex", gap: 24 }}>
+      <div style={{ display: "flex", gap: 28 }}>
         {/* ====== LEFT COLUMN ====== */}
-        <div style={{ width: "47%" }}>
+        <div style={{ width: "46%" }}>
           {/* EXPERIENCE */}
           <SectionTitle>{labels.experience}</SectionTitle>
 
-          <div>
+          <div style={{ position: "relative" }}>
+            {/* Continuous timeline line behind all entries */}
+            <div
+              style={{
+                position: "absolute",
+                left: 4.5,
+                top: 8,
+                bottom: 8,
+                width: 3,
+                background: "#022bfe",
+                zIndex: 0,
+              }}
+            />
             {data.experiences.map((exp, i) => (
-              <div key={i} style={{ display: "flex", gap: 10, marginBottom: 8 }}>
-                {/* Timeline column */}
+              <div key={i} style={{ display: "flex", gap: 8, marginBottom: 6, position: "relative" }}>
+                {/* Timeline dot */}
                 <div
                   style={{
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
                     paddingTop: 2,
-                    position: "relative",
                     minWidth: 12,
+                    zIndex: 1,
                   }}
                 >
                   <TimelineDot filled={i === 0} />
-                  {i < data.experiences.length - 1 && (
-                    <div style={{ width: 3, background: "#022bfe", flex: 1 }} />
-                  )}
                 </div>
 
                 {/* Content */}
-                <div style={{ flex: 1, paddingBottom: 2 }}>
-                  <div style={{ fontSize: 10, color: "#888", fontStyle: "italic" }}>
-                    {exp.dateRange}
+                <div style={{ flex: 1, paddingBottom: 1 }}>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+                    <span style={{ fontSize: 10, color: "#888", fontStyle: "italic", whiteSpace: "nowrap" }}>
+                      {exp.dateRange}
+                    </span>
                   </div>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "#022bfe" }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "#022bfe" }}>
                     {exp.company}
                   </div>
                   {exp.location && (
-                    <div style={{ fontSize: 9, color: "#888", fontStyle: "italic" }}>
+                    <div style={{ fontSize: 10, color: "#888", fontStyle: "italic" }}>
                       {exp.location}
                     </div>
                   )}
                   {exp.roles.map((role, j) => (
-                    <div key={j} style={{ marginTop: 3 }}>
-                      <div style={{ fontSize: 11, fontWeight: 700 }}>{role.title}</div>
-                      <ul style={{ margin: "2px 0 0 14px", padding: 0, listStyleType: "disc" }}>
+                    <div key={j} style={{ marginTop: 2 }}>
+                      <div style={{ fontSize: 12, fontWeight: 700 }}>{role.title}</div>
+                      <ul style={{ margin: "1px 0 0 12px", padding: 0, listStyleType: "disc" }}>
                         {role.bullets.map((bullet, k) => (
-                          <li key={k} style={{ fontSize: 10, lineHeight: 1.35, marginBottom: 1 }}>
+                          <li key={k} style={{ fontSize: 10.5, lineHeight: 1.3, marginBottom: 0.5 }}>
                             {bullet}
                           </li>
                         ))}
@@ -281,45 +335,62 @@ export default function CVPreview({ data }: CVPreviewProps) {
                 </div>
               </div>
             ))}
-          </div>
 
-          {/* PREVIOUS EXPERIENCES SUMMARY */}
-          {data.previousExperiencesSummary && (
-            <div style={{ marginTop: 4 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, marginBottom: 3 }}>
-                {data.previousExperiencesSummary.title}
+            {/* PREVIOUS EXPERIENCES SUMMARY — inside timeline */}
+            {data.previousExperiencesSummary && (
+              <div style={{ display: "flex", gap: 8, position: "relative" }}>
+                {/* Timeline dot */}
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    paddingTop: 2,
+                    minWidth: 12,
+                    zIndex: 1,
+                  }}
+                >
+                  <TimelineDot filled />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, marginBottom: 2 }}>
+                    {data.previousExperiencesSummary.title}
+                  </div>
+                  <ul style={{ margin: "0 0 0 12px", padding: 0, listStyleType: "disc" }}>
+                    {data.previousExperiencesSummary.bullets.map((bullet, i) => (
+                      <li key={i} style={{ fontSize: 10, lineHeight: 1.3, marginBottom: 0.5 }}>
+                        {bullet}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
-              <ul style={{ margin: "0 0 0 14px", padding: 0, listStyleType: "disc" }}>
-                {data.previousExperiencesSummary.bullets.map((bullet, i) => (
-                  <li key={i} style={{ fontSize: 10, lineHeight: 1.35, marginBottom: 1 }}>
-                    {bullet}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* PROJECTS */}
           {hasProjects && (
-            <div style={{ marginTop: 16 }}>
+            <div style={{ marginTop: 14 }}>
               <SectionTitle>{labels.projects}</SectionTitle>
               <div>
-                {data.projects.map((project, i) => (
-                  <div key={i} style={{ display: "flex", gap: 10, marginBottom: 6 }}>
-                    <div style={{ paddingTop: 2, minWidth: 12, display: "flex", justifyContent: "center" }}>
+                {data.projects!.map((project, i) => (
+                  <div key={i} style={{ display: "flex", gap: 8, marginBottom: 5, alignItems: "flex-start" }}>
+                    <div style={{ paddingTop: 3, minWidth: 12, display: "flex", justifyContent: "center" }}>
                       <TimelineDot filled />
                     </div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ display: "flex", gap: 10, alignItems: "baseline" }}>
-                        <span style={{ fontSize: 10, color: "#888", fontStyle: "italic" }}>
+                      <div style={{ display: "flex", gap: 0 }}>
+                        <span style={{ fontSize: 10, color: "#888", fontStyle: "italic", minWidth: 38, flexShrink: 0 }}>
                           {project.year}
                         </span>
-                        <span style={{ fontSize: 11, fontWeight: 700 }}>
-                          {project.sector}
-                        </span>
-                      </div>
-                      <div style={{ fontSize: 10, lineHeight: 1.35 }}>
-                        {project.description}
+                        <div>
+                          <span style={{ fontSize: 11, fontWeight: 700 }}>{project.sector}</span>
+                          {project.description && (
+                            <div style={{ fontSize: 10, lineHeight: 1.3, color: "#333" }}>
+                              {project.description}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -327,62 +398,31 @@ export default function CVPreview({ data }: CVPreviewProps) {
               </div>
             </div>
           )}
-
-          {/* EDUCATION */}
-          <div style={{ marginTop: 16 }}>
-            <SectionTitle>{labels.education}</SectionTitle>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 20px" }}>
-              {data.education.map((edu, i) => (
-                <div key={i} style={{ flex: "1 1 45%", minWidth: "45%" }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, textAlign: "center", marginBottom: 3 }}>
-                    {edu.degree}
-                  </div>
-                  <div style={{ display: "flex", gap: 6 }}>
-                    <div style={{ fontSize: 9, color: "#888", fontStyle: "italic", whiteSpace: "nowrap" }}>
-                      {edu.dateRange}
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 10, fontWeight: 700 }}>{edu.institution}</div>
-                      {edu.details && (
-                        <ul style={{ margin: "2px 0 0 10px", padding: 0, listStyleType: "disc" }}>
-                          {edu.details.map((d, j) => (
-                            <li key={j} style={{ fontSize: 9, lineHeight: 1.3 }}>
-                              {d}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
 
         {/* ====== RIGHT COLUMN ====== */}
-        <div style={{ width: "53%" }}>
+        <div style={{ width: "54%" }}>
           {/* COMPETENCES */}
           <SectionTitle>{labels.competences}</SectionTitle>
 
           <div>
             {data.competences.map((cat, i) => (
-              <div key={i} style={{ marginBottom: 10 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 3 }}>
+              <div key={i} style={{ marginBottom: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 2 }}>
                   <span style={{ fontSize: 13 }}>{cat.icon}</span>
                   <span style={{ fontSize: 12, fontWeight: 700 }}>{cat.title}</span>
                 </div>
 
                 {cat.subcategories && cat.subcategories.length > 0 ? (
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 20px", marginLeft: 20 }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "2px 16px", marginLeft: 18 }}>
                     {cat.subcategories.map((sub, j) => (
-                      <div key={j} style={{ minWidth: 90 }}>
-                        <div style={{ fontSize: 10, fontWeight: 600, textDecoration: "underline", marginBottom: 2 }}>
+                      <div key={j} style={{ minWidth: 80 }}>
+                        <div style={{ fontSize: 10.5, fontWeight: 600, textDecoration: "underline", marginBottom: 1 }}>
                           {sub.title}
                         </div>
-                        <ul style={{ margin: "0 0 0 12px", padding: 0, listStyleType: "disc" }}>
+                        <ul style={{ margin: "0 0 0 10px", padding: 0, listStyleType: "disc" }}>
                           {sub.items.map((item, k) => (
-                            <li key={k} style={{ fontSize: 10, lineHeight: 1.35 }}>
+                            <li key={k} style={{ fontSize: 10.5, lineHeight: 1.3 }}>
                               {item}
                             </li>
                           ))}
@@ -391,9 +431,9 @@ export default function CVPreview({ data }: CVPreviewProps) {
                     ))}
                   </div>
                 ) : cat.items ? (
-                  <ul style={{ margin: "0 0 0 30px", padding: 0, listStyleType: "disc" }}>
+                  <ul style={{ margin: "0 0 0 28px", padding: 0, listStyleType: "disc" }}>
                     {cat.items.map((item, j) => (
-                      <li key={j} style={{ fontSize: 10, lineHeight: 1.35 }}>
+                      <li key={j} style={{ fontSize: 10.5, lineHeight: 1.3 }}>
                         {item}
                       </li>
                     ))}
@@ -405,28 +445,59 @@ export default function CVPreview({ data }: CVPreviewProps) {
 
           {/* REFERENCES */}
           {hasReferences && (
-            <div style={{ marginTop: 16 }}>
+            <div style={{ marginTop: 14 }}>
               <SectionTitle>{labels.references}</SectionTitle>
               <div>
                 {data.references.map((ref, i) => (
-                  <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 10 }}>
-                    <div style={{ paddingTop: 2 }}>
+                  <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 12 }}>
+                    <div style={{ paddingTop: 3 }}>
                       <TimelineDot filled />
                     </div>
                     <div>
-                      <div style={{ fontSize: 11, fontWeight: 700 }}>{ref.name}</div>
+                      <div style={{ fontSize: 12, fontWeight: 700 }}>{ref.name}</div>
                       {ref.email && (
-                        <div style={{ fontSize: 10, color: "#022bfe", fontStyle: "italic" }}>
+                        <div style={{ fontSize: 11, color: "#022bfe", fontStyle: "italic" }}>
                           {ref.email}
                         </div>
                       )}
-                      <div style={{ fontSize: 10, color: "#555" }}>{ref.title}</div>
+                      <div style={{ fontSize: 11, color: "#555" }}>{ref.title}</div>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* ───────── EDUCATION (full width) ───────── */}
+      <div style={{ marginTop: 14 }}>
+        <SectionTitle>{labels.education}</SectionTitle>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 32px" }}>
+          {data.education.map((edu, i) => (
+            <div key={i} style={{ flex: "1 1 45%", minWidth: "40%" }}>
+              <div style={{ fontSize: 12, fontWeight: 700, textAlign: "center", marginBottom: 2 }}>
+                {edu.degree}
+              </div>
+              <div style={{ display: "flex", gap: 6 }}>
+                <div style={{ fontSize: 10, color: "#888", fontStyle: "italic", whiteSpace: "nowrap" }}>
+                  {edu.dateRange}
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 700 }}>{edu.institution}</div>
+                  {edu.details && (
+                    <ul style={{ margin: "1px 0 0 10px", padding: 0, listStyleType: "disc" }}>
+                      {edu.details.map((d, j) => (
+                        <li key={j} style={{ fontSize: 10, lineHeight: 1.3 }}>
+                          {d}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

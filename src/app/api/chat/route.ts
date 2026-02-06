@@ -79,14 +79,16 @@ IMPORTANT RULES:
 1. The FIRST experience should ALWAYS be at 21DATAS in Lausanne, with dates starting from 2025 or "today"/"aujourd'hui" if current
 2. Keep original language (French or English) for content
 3. For section headers in the CV, detect the language and use appropriate headers (EXPERIENCE/EXPÉRIENCES, COMPÉTENCES/SKILLS, ÉDUCATION/EDUCATION, etc.)
-4. Extract ALL information - don't skip any details
-5. Group competences logically (IT/Computing, Tools/Platforms, Data viz, Languages/Personal, Frameworks, Functional)
-6. If experiences mention a summary of previous roles, use previousExperiencesSummary
-7. For email, default to firstname.lastname@21datas.ch if not provided
-8. LinkedIn should be in format linkedin.com/in/name
-9. Return ONLY the JSON, no markdown code fences, no explanation
-10. If projects are mentioned, extract them with year, sector and description
-11. References should include name and title/position`;
+4. MAXIMUM 3 experiences in the "experiences" array. Keep only the 3 most recent and relevant ones. If there are more than 3 experiences, summarize ALL older ones in "previousExperiencesSummary"
+5. Each experience should have maximum 3 bullet points per role, keep them concise (1 line each)
+6. Group competences logically (Cloud & Infra, Data & Analytics, Governance & Method, Languages, etc.) — use maximum 5-6 categories
+7. If experiences mention a summary of previous roles, use previousExperiencesSummary
+8. For email, default to firstname.lastname@21datas.ch if not provided
+9. LinkedIn should be in format linkedin.com/in/name
+10. Return ONLY the JSON, no markdown code fences, no explanation
+11. If projects are explicitly mentioned in the CV, extract them with year, sector and a SHORT description (1 line max). If no projects are mentioned, set "projects" to an empty array []
+12. References should include name and title/position. If no references are mentioned, set "references" to an empty array []
+13. Education: maximum 2 entries, keep details short (max 3 bullet points each)`;
 
 export async function POST(request: NextRequest) {
   try {
@@ -117,7 +119,7 @@ ${message}`;
       systemInstruction: { role: "model", parts: [{ text: SYSTEM_PROMPT }] },
       generationConfig: {
         temperature: 0.1,
-        maxOutputTokens: 8192,
+        maxOutputTokens: 16384,
       },
     });
 
@@ -137,7 +139,59 @@ ${message}`;
     }
     cleanJson = cleanJson.trim();
 
-    const cvData = JSON.parse(cleanJson);
+    // Attempt to repair truncated JSON from Gemini
+    let cvData;
+    try {
+      cvData = JSON.parse(cleanJson);
+    } catch (parseErr) {
+      // Try to fix common issues: unterminated strings, missing brackets
+      let fixed = cleanJson;
+
+      // Remove any trailing incomplete key-value (after last complete property)
+      // Find the last complete value (ends with " or ] or } or a number or true/false/null)
+      const lastGoodComma = fixed.lastIndexOf(",");
+      const lastCloseBrace = fixed.lastIndexOf("}");
+      const lastCloseBracket = fixed.lastIndexOf("]");
+
+      // If the JSON is truncated mid-string, cut back to last good comma
+      if (lastGoodComma > lastCloseBrace && lastGoodComma > lastCloseBracket) {
+        fixed = fixed.slice(0, lastGoodComma);
+      }
+
+      // Count and close unclosed brackets/braces
+      let braces = 0;
+      let brackets = 0;
+      let inString = false;
+      let escape = false;
+      for (let ci = 0; ci < fixed.length; ci++) {
+        const ch = fixed[ci];
+        if (escape) { escape = false; continue; }
+        if (ch === "\\") { escape = true; continue; }
+        if (ch === '"') { inString = !inString; continue; }
+        if (inString) continue;
+        if (ch === "{") braces++;
+        if (ch === "}") braces--;
+        if (ch === "[") brackets++;
+        if (ch === "]") brackets--;
+      }
+      // Close any open string
+      if (inString) fixed += '"';
+      for (let bi = 0; bi < brackets; bi++) fixed += "]";
+      for (let bi = 0; bi < braces; bi++) fixed += "}";
+
+      try {
+        cvData = JSON.parse(fixed);
+      } catch {
+        // Last resort: strip from last valid closing brace
+        const idx = fixed.lastIndexOf("}");
+        if (idx > 0) {
+          const lastTry = fixed.slice(0, idx + 1);
+          cvData = JSON.parse(lastTry);
+        } else {
+          throw parseErr;
+        }
+      }
+    }
 
     return NextResponse.json({
       success: true,
