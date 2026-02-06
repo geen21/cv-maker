@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { CVData } from "@/types/cv";
+import React, { useMemo } from "react";
+import { CVData, Education } from "@/types/cv";
 import logo21datas from "@/image/21DATAS LOGO-05.png";
 
 interface CVPreviewProps {
@@ -112,11 +112,143 @@ const TimelineDot: React.FC<{ filled?: boolean }> = ({ filled }) => (
   />
 );
 
+/* ────────── Education section (reusable, placed dynamically) ────────── */
+
+const EducationSection: React.FC<{
+  labels: { education: string };
+  education: Education[];
+}> = ({ labels, education }) => (
+  <div style={{ marginTop: 14 }}>
+    <SectionTitle>{labels.education}</SectionTitle>
+    <div style={{ position: "relative" }}>
+      {education.length > 1 && (
+        <div
+          style={{
+            position: "absolute",
+            left: 4.5,
+            top: 8,
+            bottom: 8,
+            width: 3,
+            background: "#022bfe",
+            zIndex: 0,
+          }}
+        />
+      )}
+      {education.map((edu, i) => (
+        <div key={i} style={{ display: "flex", gap: 8, marginBottom: 6, position: "relative" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              paddingTop: 2,
+              minWidth: 12,
+              zIndex: 1,
+            }}
+          >
+            <TimelineDot filled={i === 0} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+              <span style={{ fontSize: 11, color: "#888", fontStyle: "italic", whiteSpace: "nowrap" }}>
+                {edu.dateRange}
+              </span>
+            </div>
+            <div style={{ fontSize: 13, fontWeight: 700 }}>{edu.degree}</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#022bfe" }}>{edu.institution}</div>
+            {edu.details && (
+              <ul style={{ margin: "1px 0 0 12px", padding: 0, listStyleType: "disc" }}>
+                {edu.details.map((d, j) => (
+                  <li key={j} style={{ fontSize: 11, lineHeight: 1.3 }}>
+                    {d}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
 /* ────────── main component ────────── */
 
 export default function CVPreview({ data }: CVPreviewProps) {
   const hasProjects = data.projects && data.projects.length > 0;
   const hasReferences = data.references && data.references.length > 0;
+
+  /* ─── Layout agent: estimate content height per column ─── */
+  const educationPlacement = useMemo(() => {
+    const TOTAL_H = 1123;
+    const HEADER_H = 160; // header + padding
+    const SECTION_TITLE_H = 30;
+    const AVAILABLE = TOTAL_H - HEADER_H;
+
+    // ── Left column height estimation ──
+    let leftH = SECTION_TITLE_H; // "EXPERIENCES"
+    for (const exp of data.experiences) {
+      leftH += 14 + 16 + (exp.location ? 14 : 0); // dateRange + company + location
+      for (const role of exp.roles) {
+        leftH += 16; // role title
+        leftH += role.bullets.length * 16; // bullets
+      }
+      leftH += 6; // marginBottom
+    }
+    if (data.previousExperiencesSummary) {
+      leftH += 18; // title
+      leftH += data.previousExperiencesSummary.bullets.length * 15;
+    }
+    if (hasProjects) {
+      leftH += SECTION_TITLE_H;
+      for (const p of data.projects!) {
+        leftH += 28 + (p.description ? 16 : 0);
+      }
+    }
+
+    // ── Right column height estimation ──
+    let rightH = SECTION_TITLE_H; // "COMPETENCES"
+    for (const cat of data.competences) {
+      rightH += 22; // category header
+      if (cat.subcategories && cat.subcategories.length > 0) {
+        // subcategories laid out in flex-wrap rows (~2 per row)
+        const rows = Math.ceil(cat.subcategories.length / 2);
+        let maxItemsPerRow = 0;
+        for (const sub of cat.subcategories) {
+          maxItemsPerRow = Math.max(maxItemsPerRow, sub.items.length);
+        }
+        rightH += rows * (18 + maxItemsPerRow * 15);
+      } else if (cat.items) {
+        rightH += cat.items.length * 15;
+      }
+      rightH += 8; // marginBottom
+    }
+    if (hasReferences) {
+      rightH += SECTION_TITLE_H;
+      rightH += data.references.length * 42;
+    }
+
+    // ── Education height estimation ──
+    let eduH = SECTION_TITLE_H;
+    for (const edu of data.education) {
+      eduH += 16 + 16 + 16; // dateRange + degree + institution
+      if (edu.details) {
+        eduH += edu.details.length * 15;
+      }
+      eduH += 6;
+    }
+
+    const leftRemaining = AVAILABLE - leftH;
+    const rightRemaining = AVAILABLE - rightH;
+
+    // Decide placement:
+    // 1. Right column (default if it fits)
+    if (rightRemaining >= eduH + 10) return "right";
+    // 2. Left column (if right is too full but left has space)
+    if (leftRemaining >= eduH + 10) return "left";
+    // 3. Full width bottom (fallback)
+    return "bottom";
+  }, [data, hasProjects, hasReferences]);
 
   // Language detection
   const isFrench =
@@ -398,6 +530,8 @@ export default function CVPreview({ data }: CVPreviewProps) {
               </div>
             </div>
           )}
+          {/* EDUCATION — left column placement */}
+          {educationPlacement === "left" && <EducationSection labels={labels} education={data.education} />}
         </div>
 
         {/* ====== RIGHT COLUMN ====== */}
@@ -468,60 +602,17 @@ export default function CVPreview({ data }: CVPreviewProps) {
             </div>
           )}
 
-          {/* EDUCATION — in right column, timeline style */}
-          <div style={{ marginTop: 14 }}>
-            <SectionTitle>{labels.education}</SectionTitle>
-            <div style={{ position: "relative" }}>
-              {/* Continuous timeline line */}
-              <div
-                style={{
-                  position: "absolute",
-                  left: 4.5,
-                  top: 8,
-                  bottom: 8,
-                  width: 3,
-                  background: "#022bfe",
-                  zIndex: 0,
-                }}
-              />
-              {data.education.map((edu, i) => (
-                <div key={i} style={{ display: "flex", gap: 8, marginBottom: 6, position: "relative" }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      paddingTop: 2,
-                      minWidth: 12,
-                      zIndex: 1,
-                    }}
-                  >
-                    <TimelineDot filled={i === 0} />
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-                      <span style={{ fontSize: 11, color: "#888", fontStyle: "italic", whiteSpace: "nowrap" }}>
-                        {edu.dateRange}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: 13, fontWeight: 700 }}>{edu.degree}</div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: "#022bfe" }}>{edu.institution}</div>
-                    {edu.details && (
-                      <ul style={{ margin: "1px 0 0 12px", padding: 0, listStyleType: "disc" }}>
-                        {edu.details.map((d, j) => (
-                          <li key={j} style={{ fontSize: 11, lineHeight: 1.3 }}>
-                            {d}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          {/* EDUCATION — right column placement */}
+          {educationPlacement === "right" && <EducationSection labels={labels} education={data.education} />}
         </div>
       </div>
+
+      {/* EDUCATION — full width bottom fallback */}
+      {educationPlacement === "bottom" && (
+        <div style={{ marginTop: 14 }}>
+          <EducationSection labels={labels} education={data.education} />
+        </div>
+      )}
     </div>
   );
 }
