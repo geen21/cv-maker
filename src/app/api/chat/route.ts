@@ -1,9 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest, NextResponse } from "next/server";
 
-const GEMINI_API_KEY = "AIzaSyDjUPBjZR-CZ2d9o0enQ_6NRmY0B6Fs3O0";
-
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 const SYSTEM_PROMPT = `You are a CV data extraction expert for 21Datas consulting company. Your job is to parse raw CV text and extract structured data.
 
