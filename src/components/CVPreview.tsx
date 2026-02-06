@@ -14,7 +14,7 @@ const SectionTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
     <h2
       style={{
-        fontSize: "1.4rem",
+        fontSize: "1.5rem",
         fontWeight: 900,
         textTransform: "uppercase",
         letterSpacing: "0.02em",
@@ -94,7 +94,7 @@ const icons = {
 const InfoRowSvg: React.FC<{ icon: React.ReactNode; text: string }> = ({ icon, text }) => (
   <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
     <IconBox>{icon}</IconBox>
-    <span style={{ fontSize: 11, color: "#222" }}>{text}</span>
+    <span style={{ fontSize: 12, color: "#222" }}>{text}</span>
   </div>
 );
 
@@ -152,7 +152,7 @@ export default function CVPreview({ data }: CVPreviewProps) {
         padding: "28px 36px 32px 36px",
         boxSizing: "border-box",
         position: "relative",
-        fontSize: 12,
+        fontSize: 13,
         lineHeight: 1.45,
         overflow: "hidden",
       }}
@@ -219,7 +219,7 @@ export default function CVPreview({ data }: CVPreviewProps) {
         <div style={{ flex: 1, marginLeft: 16 }}>
           <h1
             style={{
-              fontSize: "2.15rem",
+              fontSize: "2.25rem",
               fontWeight: 900,
               letterSpacing: "-0.02em",
               lineHeight: 1,
@@ -253,7 +253,7 @@ export default function CVPreview({ data }: CVPreviewProps) {
         {/* Right side: professional title + 21 DATAS logo */}
         <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 12, maxWidth: 160 }}>
           {data.titles?.map((title, i) => (
-            <div key={i} style={{ fontSize: 13, color: "#444", lineHeight: 1.35 }}>
+            <div key={i} style={{ fontSize: 14, color: "#444", lineHeight: 1.35 }}>
               {title}
             </div>
           ))}
@@ -308,24 +308,24 @@ export default function CVPreview({ data }: CVPreviewProps) {
                 {/* Content */}
                 <div style={{ flex: 1, paddingBottom: 1 }}>
                   <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-                    <span style={{ fontSize: 10, color: "#888", fontStyle: "italic", whiteSpace: "nowrap" }}>
+                    <span style={{ fontSize: 11, color: "#888", fontStyle: "italic", whiteSpace: "nowrap" }}>
                       {exp.dateRange}
                     </span>
                   </div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: "#022bfe" }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#022bfe" }}>
                     {exp.company}
                   </div>
                   {exp.location && (
-                    <div style={{ fontSize: 10, color: "#888", fontStyle: "italic" }}>
+                    <div style={{ fontSize: 11, color: "#888", fontStyle: "italic" }}>
                       {exp.location}
                     </div>
                   )}
                   {exp.roles.map((role, j) => (
                     <div key={j} style={{ marginTop: 2 }}>
-                      <div style={{ fontSize: 12, fontWeight: 700 }}>{role.title}</div>
+                      <div style={{ fontSize: 13, fontWeight: 700 }}>{role.title}</div>
                       <ul style={{ margin: "1px 0 0 12px", padding: 0, listStyleType: "disc" }}>
                         {role.bullets.map((bullet, k) => (
-                          <li key={k} style={{ fontSize: 10.5, lineHeight: 1.3, marginBottom: 0.5 }}>
+                          <li key={k} style={{ fontSize: 11.5, lineHeight: 1.3, marginBottom: 0.5 }}>
                             {bullet}
                           </li>
                         ))}
@@ -353,12 +353,12 @@ export default function CVPreview({ data }: CVPreviewProps) {
                   <TimelineDot filled />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, marginBottom: 2 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 2 }}>
                     {data.previousExperiencesSummary.title}
                   </div>
                   <ul style={{ margin: "0 0 0 12px", padding: 0, listStyleType: "disc" }}>
                     {data.previousExperiencesSummary.bullets.map((bullet, i) => (
-                      <li key={i} style={{ fontSize: 10, lineHeight: 1.3, marginBottom: 0.5 }}>
+                      <li key={i} style={{ fontSize: 11, lineHeight: 1.3, marginBottom: 0.5 }}>
                         {bullet}
                       </li>
                     ))}
@@ -380,13 +380,13 @@ export default function CVPreview({ data }: CVPreviewProps) {
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ display: "flex", gap: 0 }}>
-                        <span style={{ fontSize: 10, color: "#888", fontStyle: "italic", minWidth: 38, flexShrink: 0 }}>
+                        <span style={{ fontSize: 11, color: "#888", fontStyle: "italic", minWidth: 38, flexShrink: 0 }}>
                           {project.year}
                         </span>
                         <div>
-                          <span style={{ fontSize: 11, fontWeight: 700 }}>{project.sector}</span>
+                          <span style={{ fontSize: 12, fontWeight: 700 }}>{project.sector}</span>
                           {project.description && (
-                            <div style={{ fontSize: 10, lineHeight: 1.3, color: "#333" }}>
+                            <div style={{ fontSize: 11, lineHeight: 1.3, color: "#333" }}>
                               {project.description}
                             </div>
                           )}
@@ -409,20 +409,20 @@ export default function CVPreview({ data }: CVPreviewProps) {
             {data.competences.map((cat, i) => (
               <div key={i} style={{ marginBottom: 8 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 2 }}>
-                  <span style={{ fontSize: 13 }}>{cat.icon}</span>
-                  <span style={{ fontSize: 12, fontWeight: 700 }}>{cat.title}</span>
+                  <span style={{ fontSize: 14 }}>{cat.icon}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700 }}>{cat.title}</span>
                 </div>
 
                 {cat.subcategories && cat.subcategories.length > 0 ? (
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "2px 16px", marginLeft: 18 }}>
                     {cat.subcategories.map((sub, j) => (
                       <div key={j} style={{ minWidth: 80 }}>
-                        <div style={{ fontSize: 10.5, fontWeight: 600, textDecoration: "underline", marginBottom: 1 }}>
+                        <div style={{ fontSize: 11.5, fontWeight: 600, textDecoration: "underline", marginBottom: 1 }}>
                           {sub.title}
                         </div>
                         <ul style={{ margin: "0 0 0 10px", padding: 0, listStyleType: "disc" }}>
                           {sub.items.map((item, k) => (
-                            <li key={k} style={{ fontSize: 10.5, lineHeight: 1.3 }}>
+                            <li key={k} style={{ fontSize: 11.5, lineHeight: 1.3 }}>
                               {item}
                             </li>
                           ))}
@@ -433,7 +433,7 @@ export default function CVPreview({ data }: CVPreviewProps) {
                 ) : cat.items ? (
                   <ul style={{ margin: "0 0 0 28px", padding: 0, listStyleType: "disc" }}>
                     {cat.items.map((item, j) => (
-                      <li key={j} style={{ fontSize: 10.5, lineHeight: 1.3 }}>
+                      <li key={j} style={{ fontSize: 11.5, lineHeight: 1.3 }}>
                         {item}
                       </li>
                     ))}
@@ -454,13 +454,13 @@ export default function CVPreview({ data }: CVPreviewProps) {
                       <TimelineDot filled />
                     </div>
                     <div>
-                      <div style={{ fontSize: 12, fontWeight: 700 }}>{ref.name}</div>
+                      <div style={{ fontSize: 13, fontWeight: 700 }}>{ref.name}</div>
                       {ref.email && (
-                        <div style={{ fontSize: 11, color: "#022bfe", fontStyle: "italic" }}>
+                        <div style={{ fontSize: 12, color: "#022bfe", fontStyle: "italic" }}>
                           {ref.email}
                         </div>
                       )}
-                      <div style={{ fontSize: 11, color: "#555" }}>{ref.title}</div>
+                      <div style={{ fontSize: 12, color: "#555" }}>{ref.title}</div>
                     </div>
                   </div>
                 ))}
@@ -476,19 +476,19 @@ export default function CVPreview({ data }: CVPreviewProps) {
         <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 32px" }}>
           {data.education.map((edu, i) => (
             <div key={i} style={{ flex: "1 1 45%", minWidth: "40%" }}>
-              <div style={{ fontSize: 12, fontWeight: 700, textAlign: "center", marginBottom: 2 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, textAlign: "center", marginBottom: 2 }}>
                 {edu.degree}
               </div>
               <div style={{ display: "flex", gap: 6 }}>
-                <div style={{ fontSize: 10, color: "#888", fontStyle: "italic", whiteSpace: "nowrap" }}>
+                <div style={{ fontSize: 11, color: "#888", fontStyle: "italic", whiteSpace: "nowrap" }}>
                   {edu.dateRange}
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, fontWeight: 700 }}>{edu.institution}</div>
+                  <div style={{ fontSize: 12, fontWeight: 700 }}>{edu.institution}</div>
                   {edu.details && (
                     <ul style={{ margin: "1px 0 0 10px", padding: 0, listStyleType: "disc" }}>
                       {edu.details.map((d, j) => (
-                        <li key={j} style={{ fontSize: 10, lineHeight: 1.3 }}>
+                        <li key={j} style={{ fontSize: 11, lineHeight: 1.3 }}>
                           {d}
                         </li>
                       ))}
