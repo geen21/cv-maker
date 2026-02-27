@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useRef, useState, useEffect, useCallback } from "react";
 import { CVData, Education } from "@/types/cv";
 import logo21datas from "@/image/21DATAS LOGO-05.png";
 
 interface CVPreviewProps {
   data: CVData;
+  onUpdate?: (data: CVData) => void;
 }
 
 /* ────────── small reusable pieces ────────── */
@@ -91,10 +92,81 @@ const icons = {
   ),
 };
 
-const InfoRowSvg: React.FC<{ icon: React.ReactNode; text: string }> = ({ icon, text }) => (
+/* ────────── Editable inline text (contentEditable) ────────── */
+
+const Editable: React.FC<{
+  value: string;
+  onCommit?: (v: string) => void;
+  style?: React.CSSProperties;
+}> = ({ value, onCommit, style }) => (
+  <span
+    key={value}
+    contentEditable={!!onCommit}
+    suppressContentEditableWarning
+    onBlur={
+      onCommit
+        ? (e: React.FocusEvent) => {
+            const t = (e.target as HTMLElement).innerText.trim();
+            if (t !== value) onCommit(t);
+          }
+        : undefined
+    }
+    style={{
+      ...style,
+      outline: "none",
+      ...(onCommit ? { cursor: "text", borderRadius: 2 } : {}),
+    }}
+  >
+    {value}
+  </span>
+);
+
+/* ────────── Add button (hidden during PDF export) ────────── */
+
+const AddButton: React.FC<{
+  onClick: () => void;
+  label?: string;
+  style?: React.CSSProperties;
+}> = ({ onClick, label = "+", style }) => (
+  <button
+    className="cv-add-btn"
+    onClick={onClick}
+    title="Add"
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      width: 18,
+      height: 18,
+      borderRadius: "50%",
+      border: "1.5px dashed #022bfe",
+      background: "transparent",
+      color: "#022bfe",
+      fontSize: 13,
+      fontWeight: 700,
+      cursor: "pointer",
+      padding: 0,
+      lineHeight: 1,
+      opacity: 0.5,
+      transition: "opacity 0.15s",
+      flexShrink: 0,
+      ...style,
+    }}
+    onMouseEnter={e => { (e.target as HTMLElement).style.opacity = "1"; (e.target as HTMLElement).style.background = "#022bfe"; (e.target as HTMLElement).style.color = "#fff"; }}
+    onMouseLeave={e => { (e.target as HTMLElement).style.opacity = "0.5"; (e.target as HTMLElement).style.background = "transparent"; (e.target as HTMLElement).style.color = "#022bfe"; }}
+  >
+    {label}
+  </button>
+);
+
+const InfoRowSvg: React.FC<{ icon: React.ReactNode; text: string; onTextChange?: (v: string) => void }> = ({ icon, text, onTextChange }) => (
   <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
     <IconBox>{icon}</IconBox>
-    <span style={{ fontSize: 12, color: "#222" }}>{text}</span>
+    {onTextChange ? (
+      <Editable value={text} onCommit={onTextChange} style={{ fontSize: 12, color: "#222" }} />
+    ) : (
+      <span style={{ fontSize: 12, color: "#222" }}>{text}</span>
+    )}
   </div>
 );
 
@@ -117,7 +189,11 @@ const TimelineDot: React.FC<{ filled?: boolean }> = ({ filled }) => (
 const EducationSection: React.FC<{
   labels: { education: string };
   education: Education[];
-}> = ({ labels, education }) => (
+  onEditField?: (idx: number, field: "dateRange" | "degree" | "institution", v: string) => void;
+  onEditDetail?: (eduIdx: number, detailIdx: number, v: string) => void;
+  onAddEducation?: () => void;
+  onAddDetail?: (eduIdx: number) => void;
+}> = ({ labels, education, onEditField, onEditDetail, onAddEducation, onAddDetail }) => (
   <div style={{ marginTop: 14 }}>
     <SectionTitle>{labels.education}</SectionTitle>
     <div style={{ position: "relative" }}>
@@ -150,33 +226,55 @@ const EducationSection: React.FC<{
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-              <span style={{ fontSize: 11, color: "#888", fontStyle: "italic", whiteSpace: "nowrap" }}>
-                {edu.dateRange}
-              </span>
+              <Editable value={edu.dateRange} onCommit={onEditField ? v => onEditField(i, "dateRange", v) : undefined} style={{ fontSize: 11, color: "#888", fontStyle: "italic", whiteSpace: "nowrap" }} />
             </div>
-            <div style={{ fontSize: 13, fontWeight: 700 }}>{edu.degree}</div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "#022bfe" }}>{edu.institution}</div>
+            <Editable value={edu.degree} onCommit={onEditField ? v => onEditField(i, "degree", v) : undefined} style={{ fontSize: 13, fontWeight: 700, display: "block" }} />
+            <Editable value={edu.institution} onCommit={onEditField ? v => onEditField(i, "institution", v) : undefined} style={{ fontSize: 12, fontWeight: 700, color: "#022bfe", display: "block" }} />
             {edu.details && (
               <ul style={{ margin: "1px 0 0 12px", padding: 0, listStyleType: "disc" }}>
                 {edu.details.map((d, j) => (
                   <li key={j} style={{ fontSize: 11, lineHeight: 1.3 }}>
-                    {d}
+                    <Editable value={d} onCommit={onEditDetail ? v => onEditDetail(i, j, v) : undefined} />
                   </li>
                 ))}
+                {onAddDetail && (
+                  <li style={{ listStyleType: "none", marginLeft: -12 }}>
+                    <AddButton onClick={() => onAddDetail(i)} />
+                  </li>
+                )}
               </ul>
+            )}
+            {!edu.details && onAddDetail && (
+              <AddButton onClick={() => onAddDetail(i)} style={{ marginTop: 2 }} />
             )}
           </div>
         </div>
       ))}
+      {onAddEducation && (
+        <div style={{ display: "flex", justifyContent: "center", marginTop: 4 }}>
+          <AddButton onClick={onAddEducation} />
+        </div>
+      )}
     </div>
   </div>
 );
 
 /* ────────── main component ────────── */
 
-export default function CVPreview({ data }: CVPreviewProps) {
+export default function CVPreview({ data, onUpdate }: CVPreviewProps) {
   const hasProjects = data.projects && data.projects.length > 0;
   const hasReferences = data.references && data.references.length > 0;
+
+  /* ─── Generic deep-clone-and-mutate helper ─── */
+  const update = useCallback(
+    (mutator: (d: CVData) => void) => {
+      if (!onUpdate) return;
+      const clone: CVData = JSON.parse(JSON.stringify(data));
+      mutator(clone);
+      onUpdate(clone);
+    },
+    [data, onUpdate]
+  );
 
   /* ─── Layout agent: estimate content height per column ─── */
   const educationPlacement = useMemo(() => {
@@ -272,6 +370,32 @@ export default function CVPreview({ data }: CVPreviewProps) {
     education: isFrench ? "ÉDUCATION" : "EDUCATION",
   };
 
+  /* ─── Anti-truncation agent: measure & auto-scale ─── */
+  const innerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+
+  const measureAndScale = useCallback(() => {
+    const el = innerRef.current;
+    if (!el) return;
+    // Temporarily remove scale to get natural height
+    el.style.transform = "none";
+    const naturalH = el.scrollHeight;
+    const TARGET_H = 1123;
+    if (naturalH > TARGET_H) {
+      const s = TARGET_H / naturalH;
+      // Clamp to a minimum scale of 0.7 to keep it readable
+      setScale(Math.max(0.7, s));
+    } else {
+      setScale(1);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Wait for fonts & layout to settle
+    const t = setTimeout(measureAndScale, 50);
+    return () => clearTimeout(t);
+  }, [data, educationPlacement, measureAndScale]);
+
   return (
     <div
       id="cv-content"
@@ -279,16 +403,24 @@ export default function CVPreview({ data }: CVPreviewProps) {
         width: 794,
         height: 1123,
         background: "#fff",
-        fontFamily: "'Inter', 'Segoe UI', Arial, sans-serif",
-        color: "#111",
-        padding: "28px 36px 32px 36px",
-        boxSizing: "border-box",
         position: "relative",
-        fontSize: 13,
-        lineHeight: 1.45,
         overflow: "hidden",
       }}
     >
+      <div
+        ref={innerRef}
+        style={{
+          fontFamily: "'Inter', 'Segoe UI', Arial, sans-serif",
+          color: "#111",
+          padding: "28px 36px 32px 36px",
+          boxSizing: "border-box",
+          fontSize: 13,
+          lineHeight: 1.45,
+          transform: `scale(${scale})`,
+          transformOrigin: "top left",
+          width: scale < 1 ? `${100 / scale}%` : "100%",
+        }}
+      >
       {/* ───────── HEADER ───────── */}
       <div style={{ display: "flex", alignItems: "flex-start", marginBottom: 14 }}>
         {/* Photo with blue arc */}
@@ -359,25 +491,26 @@ export default function CVPreview({ data }: CVPreviewProps) {
               margin: 0,
             }}
           >
-            {data.firstName} {data.lastName}
+            <Editable value={data.firstName} onCommit={v => update(d => { d.firstName = v; })} /> <Editable value={data.lastName} onCommit={v => update(d => { d.lastName = v; })} />
           </h1>
 
           {/* Contact info in 2 columns */}
           <div style={{ display: "flex", gap: 32, marginTop: 12 }}>
             <div>
-              {data.email && <InfoRowSvg icon={icons.email} text={data.email} />}
-              {data.linkedin && <InfoRowSvg icon={icons.linkedin} text={data.linkedin} />}
+              {data.email && <InfoRowSvg icon={icons.email} text={data.email} onTextChange={v => update(d => { d.email = v; })} />}
+              {data.linkedin && <InfoRowSvg icon={icons.linkedin} text={data.linkedin} onTextChange={v => update(d => { d.linkedin = v; })} />}
               {data.drivingLicense && (
                 <InfoRowSvg icon={icons.driving} text={isFrench ? "Permis de conduire" : "Driving licence"} />
               )}
-              {data.location && <InfoRowSvg icon={icons.location} text={data.location} />}
+              {data.location && <InfoRowSvg icon={icons.location} text={data.location} onTextChange={v => update(d => { d.location = v; })} />}
             </div>
             <div>
-              {data.birthDate && <InfoRowSvg icon={icons.birthday} text={data.birthDate} />}
-              {data.phone && <InfoRowSvg icon={icons.phone} text={data.phone} />}
+              {data.birthDate && <InfoRowSvg icon={icons.birthday} text={data.birthDate} onTextChange={v => update(d => { d.birthDate = v; })} />}
+              {data.phone && <InfoRowSvg icon={icons.phone} text={data.phone} onTextChange={v => update(d => { d.phone = v; })} />}
               {data.certifications?.map((cert, i) => (
-                <InfoRowSvg key={i} icon={icons.cert} text={cert} />
+                <InfoRowSvg key={i} icon={icons.cert} text={cert} onTextChange={v => update(d => { d.certifications[i] = v; })} />
               ))}
+              <AddButton onClick={() => update(d => { d.certifications = [...(d.certifications || []), "New Certification"]; })} style={{ marginTop: 2 }} />
             </div>
           </div>
         </div>
@@ -386,9 +519,12 @@ export default function CVPreview({ data }: CVPreviewProps) {
         <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 12, maxWidth: 160 }}>
           {data.titles?.slice(0, 2).map((title, i) => (
             <div key={i} style={{ fontSize: 14, color: "#444", lineHeight: 1.35 }}>
-              {title}
+              <Editable value={title} onCommit={v => update(d => { d.titles[i] = v; })} />
             </div>
           ))}
+          {(!data.titles || data.titles.length < 2) && (
+            <AddButton onClick={() => update(d => { d.titles = [...(d.titles || []), "New Title"]; })} style={{ marginTop: 4 }} />
+          )}
 
           {/* 21 DATAS Logo */}
           <div style={{ marginTop: 10 }}>
@@ -437,36 +573,37 @@ export default function CVPreview({ data }: CVPreviewProps) {
                   <TimelineDot filled={i === 0} />
                 </div>
 
-                {/* Content */}
                 <div style={{ flex: 1, paddingBottom: 1 }}>
                   <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-                    <span style={{ fontSize: 11, color: "#888", fontStyle: "italic", whiteSpace: "nowrap" }}>
-                      {exp.dateRange}
-                    </span>
+                    <Editable value={exp.dateRange} onCommit={v => update(d => { d.experiences[i].dateRange = v; })} style={{ fontSize: 11, color: "#888", fontStyle: "italic", whiteSpace: "nowrap" }} />
                   </div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#022bfe" }}>
-                    {exp.company}
-                  </div>
+                  <Editable value={exp.company} onCommit={v => update(d => { d.experiences[i].company = v; })} style={{ fontSize: 13, fontWeight: 700, color: "#022bfe", display: "block" }} />
                   {exp.location && (
-                    <div style={{ fontSize: 11, color: "#888", fontStyle: "italic" }}>
-                      {exp.location}
-                    </div>
+                    <Editable value={exp.location} onCommit={v => update(d => { d.experiences[i].location = v; })} style={{ fontSize: 11, color: "#888", fontStyle: "italic", display: "block" }} />
                   )}
                   {exp.roles.map((role, j) => (
                     <div key={j} style={{ marginTop: 2 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700 }}>{role.title}</div>
+                      <Editable value={role.title} onCommit={v => update(d => { d.experiences[i].roles[j].title = v; })} style={{ fontSize: 13, fontWeight: 700, display: "block" }} />
                       <ul style={{ margin: "1px 0 0 12px", padding: 0, listStyleType: "disc" }}>
                         {role.bullets.map((bullet, k) => (
                           <li key={k} style={{ fontSize: 11.5, lineHeight: 1.3, marginBottom: 0.5 }}>
-                            {bullet}
+                            <Editable value={bullet} onCommit={v => update(d => { d.experiences[i].roles[j].bullets[k] = v; })} />
                           </li>
                         ))}
+                        <li style={{ listStyleType: "none", marginLeft: -12 }}>
+                          <AddButton onClick={() => update(d => { d.experiences[i].roles[j].bullets.push("New bullet point"); })} />
+                        </li>
                       </ul>
                     </div>
                   ))}
                 </div>
               </div>
             ))}
+
+            {/* Add new experience */}
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 6 }}>
+              <AddButton onClick={() => update(d => { d.experiences.push({ dateRange: "20XX – 20XX", company: "Company", location: "Location", roles: [{ title: "Role Title", bullets: ["Description"] }] }); })} />
+            </div>
 
             {/* PREVIOUS EXPERIENCES SUMMARY — inside timeline */}
             {data.previousExperiencesSummary && (
@@ -485,15 +622,16 @@ export default function CVPreview({ data }: CVPreviewProps) {
                   <TimelineDot filled />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 2 }}>
-                    {data.previousExperiencesSummary.title}
-                  </div>
+                  <Editable value={data.previousExperiencesSummary.title} onCommit={v => update(d => { d.previousExperiencesSummary!.title = v; })} style={{ fontSize: 12, fontWeight: 700, marginBottom: 2, display: "block" }} />
                   <ul style={{ margin: "0 0 0 12px", padding: 0, listStyleType: "disc" }}>
                     {data.previousExperiencesSummary.bullets.map((bullet, i) => (
                       <li key={i} style={{ fontSize: 11, lineHeight: 1.3, marginBottom: 0.5 }}>
-                        {bullet}
+                        <Editable value={bullet} onCommit={v => update(d => { d.previousExperiencesSummary!.bullets[i] = v; })} />
                       </li>
                     ))}
+                    <li style={{ listStyleType: "none", marginLeft: -12 }}>
+                      <AddButton onClick={() => update(d => { d.previousExperiencesSummary!.bullets.push("New bullet"); })} />
+                    </li>
                   </ul>
                 </div>
               </div>
@@ -512,15 +650,11 @@ export default function CVPreview({ data }: CVPreviewProps) {
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ display: "flex", gap: 0 }}>
-                        <span style={{ fontSize: 11, color: "#888", fontStyle: "italic", minWidth: 38, flexShrink: 0 }}>
-                          {project.year}
-                        </span>
+                        <Editable value={project.year} onCommit={v => update(d => { d.projects![i].year = v; })} style={{ fontSize: 11, color: "#888", fontStyle: "italic", minWidth: 38, flexShrink: 0 }} />
                         <div>
-                          <span style={{ fontSize: 12, fontWeight: 700 }}>{project.sector}</span>
+                          <Editable value={project.sector} onCommit={v => update(d => { d.projects![i].sector = v; })} style={{ fontSize: 12, fontWeight: 700 }} />
                           {project.description && (
-                            <div style={{ fontSize: 11, lineHeight: 1.3, color: "#333" }}>
-                              {project.description}
-                            </div>
+                            <Editable value={project.description} onCommit={v => update(d => { d.projects![i].description = v; })} style={{ fontSize: 11, lineHeight: 1.3, color: "#333", display: "block" }} />
                           )}
                         </div>
                       </div>
@@ -528,10 +662,20 @@ export default function CVPreview({ data }: CVPreviewProps) {
                   </div>
                 ))}
               </div>
+              {/* Add new project */}
+              <div style={{ display: "flex", justifyContent: "center", marginTop: 4 }}>
+                <AddButton onClick={() => update(d => { d.projects = [...(d.projects || []), { year: "20XX", sector: "Sector", description: "Description" }]; })} />
+              </div>
+            </div>
+          )}
+          {/* Add projects section if none */}
+          {!hasProjects && (
+            <div style={{ marginTop: 14 }}>
+              <AddButton onClick={() => update(d => { d.projects = [{ year: "20XX", sector: "Project Sector", description: "Description" }]; })} style={{ marginLeft: 0 }} />
             </div>
           )}
           {/* EDUCATION — left column placement */}
-          {educationPlacement === "left" && <EducationSection labels={labels} education={data.education} />}
+          {educationPlacement === "left" && <EducationSection labels={labels} education={data.education} onEditField={(idx, field, v) => update(d => { (d.education[idx] as unknown as Record<string, string>)[field] = v; })} onEditDetail={(eduIdx, detailIdx, v) => update(d => { d.education[eduIdx].details![detailIdx] = v; })} onAddEducation={() => update(d => { d.education.push({ dateRange: "20XX – 20XX", degree: "Degree", institution: "Institution" }); })} onAddDetail={(eduIdx) => update(d => { if (!d.education[eduIdx].details) d.education[eduIdx].details = []; d.education[eduIdx].details!.push("New detail"); })} />}
         </div>
 
         {/* ====== RIGHT COLUMN ====== */}
@@ -544,22 +688,24 @@ export default function CVPreview({ data }: CVPreviewProps) {
               <div key={i} style={{ marginBottom: 8 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 2 }}>
                   <span style={{ fontSize: 14 }}>{cat.icon}</span>
-                  <span style={{ fontSize: 13, fontWeight: 700 }}>{cat.title}</span>
+                  <Editable value={cat.title} onCommit={v => update(d => { d.competences[i].title = v; })} style={{ fontSize: 13, fontWeight: 700 }} />
+                  <AddButton onClick={() => update(d => { if (d.competences[i].subcategories && d.competences[i].subcategories!.length > 0) { d.competences[i].subcategories!.push({ title: "New Sub", items: ["Item"] }); } else { if (!d.competences[i].items) d.competences[i].items = []; d.competences[i].items!.push("New item"); } })} style={{ marginLeft: 4 }} />
                 </div>
 
                 {cat.subcategories && cat.subcategories.length > 0 ? (
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "2px 16px", marginLeft: 18 }}>
                     {cat.subcategories.map((sub, j) => (
                       <div key={j} style={{ minWidth: 80 }}>
-                        <div style={{ fontSize: 11.5, fontWeight: 600, textDecoration: "underline", marginBottom: 1 }}>
-                          {sub.title}
-                        </div>
+                        <Editable value={sub.title} onCommit={v => update(d => { d.competences[i].subcategories![j].title = v; })} style={{ fontSize: 11.5, fontWeight: 600, textDecoration: "underline", marginBottom: 1, display: "block" }} />
                         <ul style={{ margin: "0 0 0 10px", padding: 0, listStyleType: "disc" }}>
                           {sub.items.map((item, k) => (
                             <li key={k} style={{ fontSize: 11.5, lineHeight: 1.3 }}>
-                              {item}
+                              <Editable value={item} onCommit={v => update(d => { d.competences[i].subcategories![j].items[k] = v; })} />
                             </li>
                           ))}
+                          <li style={{ listStyleType: "none", marginLeft: -10 }}>
+                            <AddButton onClick={() => update(d => { d.competences[i].subcategories![j].items.push("New item"); })} />
+                          </li>
                         </ul>
                       </div>
                     ))}
@@ -568,13 +714,20 @@ export default function CVPreview({ data }: CVPreviewProps) {
                   <ul style={{ margin: "0 0 0 28px", padding: 0, listStyleType: "disc" }}>
                     {cat.items.map((item, j) => (
                       <li key={j} style={{ fontSize: 11.5, lineHeight: 1.3 }}>
-                        {item}
+                        <Editable value={item} onCommit={v => update(d => { d.competences[i].items![j] = v; })} />
                       </li>
                     ))}
+                    <li style={{ listStyleType: "none", marginLeft: -10 }}>
+                      <AddButton onClick={() => update(d => { if (!d.competences[i].items) d.competences[i].items = []; d.competences[i].items!.push("New item"); })} />
+                    </li>
                   </ul>
                 ) : null}
               </div>
             ))}
+            {/* Add new competence category */}
+            <div style={{ display: "flex", justifyContent: "center", marginTop: 4 }}>
+              <AddButton onClick={() => update(d => { d.competences.push({ icon: "📌", title: "New Category", items: ["Item"] }); })} />
+            </div>
           </div>
 
           {/* REFERENCES */}
@@ -588,31 +741,40 @@ export default function CVPreview({ data }: CVPreviewProps) {
                       <TimelineDot filled />
                     </div>
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 700 }}>{ref.name}</div>
+                      <Editable value={ref.name} onCommit={v => update(d => { d.references[i].name = v; })} style={{ fontSize: 13, fontWeight: 700, display: "block" }} />
                       {ref.email && (
-                        <div style={{ fontSize: 12, color: "#022bfe", fontStyle: "italic" }}>
-                          {ref.email}
-                        </div>
+                        <Editable value={ref.email} onCommit={v => update(d => { d.references[i].email = v; })} style={{ fontSize: 12, color: "#022bfe", fontStyle: "italic", display: "block" }} />
                       )}
-                      <div style={{ fontSize: 12, color: "#555" }}>{ref.title}</div>
+                      <Editable value={ref.title} onCommit={v => update(d => { d.references[i].title = v; })} style={{ fontSize: 12, color: "#555", display: "block" }} />
                     </div>
                   </div>
                 ))}
+                {/* Add new reference */}
+                <div style={{ display: "flex", justifyContent: "center", marginTop: 4 }}>
+                  <AddButton onClick={() => update(d => { d.references.push({ name: "Name", email: "email@example.com", title: "Title" }); })} />
+                </div>
               </div>
+            </div>
+          )}
+          {/* Add references section if none */}
+          {!hasReferences && (
+            <div style={{ marginTop: 14 }}>
+              <AddButton onClick={() => update(d => { d.references = [{ name: "Name", email: "email@example.com", title: "Title" }]; })} style={{ marginLeft: 0 }} />
             </div>
           )}
 
           {/* EDUCATION — right column placement */}
-          {educationPlacement === "right" && <EducationSection labels={labels} education={data.education} />}
+          {educationPlacement === "right" && <EducationSection labels={labels} education={data.education} onEditField={(idx, field, v) => update(d => { (d.education[idx] as unknown as Record<string, string>)[field] = v; })} onEditDetail={(eduIdx, detailIdx, v) => update(d => { d.education[eduIdx].details![detailIdx] = v; })} onAddEducation={() => update(d => { d.education.push({ dateRange: "20XX – 20XX", degree: "Degree", institution: "Institution" }); })} onAddDetail={(eduIdx) => update(d => { if (!d.education[eduIdx].details) d.education[eduIdx].details = []; d.education[eduIdx].details!.push("New detail"); })} />}
         </div>
       </div>
 
       {/* EDUCATION — full width bottom fallback */}
       {educationPlacement === "bottom" && (
         <div style={{ marginTop: 14 }}>
-          <EducationSection labels={labels} education={data.education} />
+          <EducationSection labels={labels} education={data.education} onEditField={(idx, field, v) => update(d => { (d.education[idx] as unknown as Record<string, string>)[field] = v; })} onEditDetail={(eduIdx, detailIdx, v) => update(d => { d.education[eduIdx].details![detailIdx] = v; })} onAddEducation={() => update(d => { d.education.push({ dateRange: "20XX – 20XX", degree: "Degree", institution: "Institution" }); })} onAddDetail={(eduIdx) => update(d => { if (!d.education[eduIdx].details) d.education[eduIdx].details = []; d.education[eduIdx].details!.push("New detail"); })} />
         </div>
       )}
+      </div>
     </div>
   );
 }

@@ -69,6 +69,11 @@ export default function Home() {
     if (!cvElement) return;
 
     setExporting(true);
+
+    // Hide add buttons during export
+    const addBtns = cvElement.querySelectorAll<HTMLElement>(".cv-add-btn");
+    addBtns.forEach(btn => { btn.style.display = "none"; });
+
     try {
       const canvas = await html2canvas(cvElement, {
         scale: 2,
@@ -103,6 +108,8 @@ export default function Home() {
       console.error("PDF export error:", error);
       alert("Error exporting PDF. Please try again.");
     } finally {
+      // Restore add buttons
+      addBtns.forEach(btn => { btn.style.display = "inline-flex"; });
       setExporting(false);
     }
   };
@@ -171,7 +178,7 @@ export default function Home() {
           <div ref={cvRef}>
             {cvData ? (
               <div className="shadow-sm">
-                <CVPreview data={cvData} />
+                <CVPreview data={cvData} onUpdate={setCvData} />
               </div>
             ) : (
               <div className="flex items-center justify-center h-full">
