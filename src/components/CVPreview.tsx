@@ -401,7 +401,6 @@ export default function CVPreview({ data, onUpdate }: CVPreviewProps) {
       id="cv-content"
       style={{
         width: 794,
-        height: 1123,
         background: "#fff",
         position: "relative",
         overflow: "hidden",
