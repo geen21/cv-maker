@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
     const { message, currentCvData } = await request.json();
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-3-pro-preview",
+      model: "gemini-3.8-flash",
     });
 
     let userPrompt: string;
